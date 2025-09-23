@@ -163,7 +163,7 @@ export default {
 				// 可选：返回错误
 				// return new Response('错误：host 参数必须是有效域名', { status: 400, headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
 			}
-			if (!url.searchParams.get('host')) path = '/?ed=2560'; // 没有host就修改path
+			if (!url.searchParams.get('host') || !env.HOST) path = '/?ed=2560'; // 没有host就修改path
             if (!upgradeHeader || upgradeHeader !== 'websocket') {
                 if (env.ADD) addresses = await 整理(env.ADD);
                 if (env.ADDAPI) addressesapi = await 整理(env.ADDAPI);
@@ -7188,3 +7188,4 @@ function config_Html(token = "test", proxyhost = "") {
 
     return html;
 }
+
