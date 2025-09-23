@@ -1,4 +1,4 @@
-﻿
+// 增加支持host的参数变量，env和url
 import { connect } from 'cloudflare:sockets';
 
 let userID = '';
@@ -43,7 +43,7 @@ let 更新时间 = 3;
 let userIDLow;
 let userIDTime = "";
 let proxyIPPool = [];
-let path = '/?ed=2560';
+let path = '/snippets/?ed=2560';
 let 动态UUID = userID;
 let link = [];
 let banHosts = [atob('c3BlZWQuY2xvdWRmbGFyZS5jb20=')];
@@ -152,6 +152,18 @@ export default {
 
             const upgradeHeader = request.headers.get('Upgrade');
             const url = new URL(request.url);
+			//const hostName = url.searchParams.get('host') || env.HOST || request.headers.get('Host');
+			let iHostName = url.searchParams.get('host') || env.HOST || request.headers.get('Host');
+
+			// 验证域名格式
+			const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
+			if (!domainRegex.test(iHostName)) {
+				console.warn('无效 host 参数:', iHostName);
+				iHostName = request.headers.get('Host'); // 回退到默认域名
+				// 可选：返回错误
+				// return new Response('错误：host 参数必须是有效域名', { status: 400, headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
+			}
+			if (!url.searchParams.get('host')) path = '/?ed=2560'; // 没有host就修改path
             if (!upgradeHeader || upgradeHeader !== 'websocket') {
                 if (env.ADD) addresses = await 整理(env.ADD);
                 if (env.ADDAPI) addressesapi = await 整理(env.ADDAPI);
@@ -206,17 +218,17 @@ export default {
                         },
                     });
                 } else if (路径 == `/${fakeUserID}`) {
-                    const fakeConfig = await 生成配置信息(userID, request.headers.get('Host'), sub, 'CF-Workers-SUB', 请求CF反代IP, url, fakeUserID, fakeHostName, env);
+					const fakeConfig = await 生成配置信息(userID, iHostName, sub, 'CF-Workers-SUB', 请求CF反代IP, url, fakeUserID, fakeHostName, env);
                     return new Response(`${fakeConfig}`, { status: 200 });
                 } else if ((url.pathname == `/${动态UUID}/config.json` || 路径 == `/${userID}/config.json`) && url.searchParams.get('token') === await 双重哈希(fakeUserID + UA)) {
-                    return await config_Json(userID, request.headers.get('Host'), sub, UA, 请求CF反代IP, url, fakeUserID, fakeHostName, env);
+					return await config_Json(userID, iHostName, sub, UA, 请求CF反代IP, url, fakeUserID, fakeHostName, env);
                 } else if (url.pathname == `/${动态UUID}/edit` || 路径 == `/${userID}/edit`) {
                     return await KV(request, env);
                 } else if (url.pathname == `/${动态UUID}/bestip` || 路径 == `/${userID}/bestip`) {
                     return await bestIP(request, env);
                 } else if (url.pathname == `/${动态UUID}` || 路径 == `/${userID}`) {
                     await sendMessage(`#获取订阅 ${FileName}`, request.headers.get('CF-Connecting-IP'), `UA: ${UA}</tg-spoiler>\n域名: ${url.hostname}\n<tg-spoiler>入口: ${url.pathname + url.search}</tg-spoiler>`);
-                    const 维列斯Config = await 生成配置信息(userID, request.headers.get('Host'), sub, UA, 请求CF反代IP, url, fakeUserID, fakeHostName, env);
+					const 维列斯Config = await 生成配置信息(userID, iHostName, sub, UA, 请求CF反代IP, url, fakeUserID, fakeHostName, env);
                     const now = Date.now();
                     //const timestamp = Math.floor(now / 1000);
                     const today = new Date(now);
