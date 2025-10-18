@@ -149,6 +149,25 @@ export default {
 
             const upgradeHeader = request.headers.get('Upgrade');
             const url = new URL(request.url);
+			try {
+				const urlUUID = url.searchParams.get('uuid');
+				if (urlUUID && isValidUUID(urlUUID)) {
+					userID = urlUUID;
+				} else if (urlUUID) {
+					return new Response('无效的 UUID', { status: 400 });
+				}
+			} catch (error) {
+				return new Response('无效的 URL', { status: 400 });
+			}
+			let userHOST = url.searchParams.get('host') || request.headers.get('Host');
+
+			// 验证域名格式
+			const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
+			if (!domainRegex.test(userHOST)) {
+				console.warn('无效 host 参数:', userHOST);
+				userHOST = request.headers.get('Host'); // 回退到默认域名
+			}
+			//if (url.searchParams.get('host') && domainRegex.test(userHOST)) path = '/snippets/?ed=2560';
             if (!upgradeHeader || upgradeHeader !== 'websocket') {
                 if (env.ADD) addresses = await 整理(env.ADD);
                 if (env.ADDAPI) addressesapi = await 整理(env.ADDAPI);
@@ -5814,4 +5833,5 @@ async function handleWebSocket(request) {
         status: 101,
         webSocket: client
     });
+
 }
